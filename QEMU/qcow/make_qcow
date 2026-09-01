@@ -1,0 +1,68 @@
+# Make the image file. 
+qemu-img create -f qcow2 linux-boot.qcow2 5G
+
+# Load the network block device module
+sudo modprobe nbd max_part=8
+
+# Connect the image to an nbd device
+sudo qemu-nbd --connect=/dev/nbd0 linux-boot.qcow2
+
+# Create a partition table and a single partition
+
+sudo parted /dev/nbd0 mklabel msdos
+sudo parted /dev/nbd0 mkpart primary ext4 1MiB 100%
+
+# Format the partition as ext4
+sudo mkfs.ext4 /dev/nbd0p1
+
+# Mount the partition to a temporary directory
+mkdir /tmp/mnt-qcow
+sudo mount /dev/nbd0p1 /tmp/mnt-qcow
+cd /tmp/mnt-qcow
+sudo mkdir -p bin sbin usr/bin usr/sbin dev proc sys etc root home mnt
+
+
+# Download and make busybox and target it's install to /tmp/mnt-qcow 
+#  make CONFIG_PREFIX=/tmp/mnt-qcow install
+
+
+sudo mkdir -p /tmp/mnt-qcow/etc/init.d
+sudo tee /tmp/mnt-qcow/etc/init.d/rcS << 'EOF'
+#!/bin/sh
+mount -t proc none /proc
+mount -t sysfs none /sys
+echo "Welcome to Minimal Linux Boot Essentials!"
+/bin/sh
+EOF
+sudo chmod +x /tmp/mnt-qcow/etc/init.d/rcS
+
+
+# Install extlinux onto the mounted partition directory
+# Make sure this executes. you may need to install extlinux 
+sudo extlinux --install /tmp/mnt-qcow
+
+
+# Create the bootloader configuration file
+sudo tee /tmp/mnt-qcow/extlinux.conf << 'EOF'
+DEFAULT linux
+LABEL linux
+  SAY Booting minimal Linux kernel...
+  KERNEL /vmlinuz
+  APPEND root=/dev/sda1 console=ttyS0 init=/etc/init.d/rcS rw
+EOF
+
+sudo parted /dev/nbd0 set 1 boot on
+
+# Unmount the image filesystem
+sudo umount /tmp/mnt-qcow
+
+# Install standard MBR boot code to the virtual drive. You may 
+
+ALT_MBR_PATH=$(find /usr/ -name "altmbr.bin" 2>/dev/null | head -n 1)
+sudo dd bs=440 count=1 conv=notrunc if="$ALT_MBR_PATH" of=/dev/nbd0
+
+# Disconnect the network block device
+sudo qemu-nbd --disconnect /dev/nbd0
+
+
+
