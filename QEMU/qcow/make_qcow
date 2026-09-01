@@ -54,6 +54,8 @@ EOF
 
 sudo parted /dev/nbd0 set 1 boot on
 
+# Be sure to also copy your kernel module. 
+
 # Unmount the image filesystem
 sudo umount /tmp/mnt-qcow
 
@@ -64,6 +66,4 @@ sudo dd bs=440 count=1 conv=notrunc if="$ALT_MBR_PATH" of=/dev/nbd0
 
 # And Disconnect the network block device
 sudo qemu-nbd --disconnect /dev/nbd0
-
-
 

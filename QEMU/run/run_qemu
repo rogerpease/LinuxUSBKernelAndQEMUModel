@@ -2,7 +2,7 @@
 #  
 #
 
-sudo ../QEMU/build/qemu-system-x86_64 \
+sudo ../../../QEMU/build/qemu-system-x86_64 \
   -cpu host -enable-kvm \
   -m 8G \
   -smp 2 \
