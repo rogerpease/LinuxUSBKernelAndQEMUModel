@@ -292,11 +292,11 @@ ssize_t char_file_write (struct file *filp, const char * buf, size_t byteCount, 
     } 
     memset(data,0,reqlen);
   
-    __u8 endpoint      = 2; 
-    __u8 requesttype   = 5; 
-    __u8 request       = 8; 
+    __u8 endpoint      = 0x82; 
+    __u8 requesttype   = 0; 
+    __u8 request       = 0; 
     __u16 requestvalue = 7; 
-    __u16 requestindex = 0x1234; 
+    __u16 requestindex = 0x0102; 
     __u16 timeout      = 32; 
 
 
