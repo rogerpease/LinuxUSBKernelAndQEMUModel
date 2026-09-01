@@ -1,0 +1,17 @@
+#
+#
+#
+
+sudo ../QEMU/build/qemu-system-x86_64 \
+  -cpu host -enable-kvm \
+  -m 8G \
+  -smp 2 \
+  -drive file=linux-boot.qcow2 \
+  -device qemu-xhci,id=usb \
+  -device my-usb-device,bus=usb.0 \
+  -nographic
+
+#  -kernel /boot/vmlinuz-$(uname -r) \
+#  -initrd /boot/initrd.img-$(uname -r) \
+#  -drive file=/dev/nvme0n1,format=raw,snapshot=on,if=virtio \
+
